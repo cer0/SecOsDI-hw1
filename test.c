@@ -19,9 +19,21 @@
 
 #include "mem.h"
 
+const int MAXBUFF = 100 ;
 void main(int argc, char **argv) {
 
+	/* constants like this are located on the stack & cannot be changed */
 	char* name = "Pikachu\n" ;
+	char buff[100] = "I choose you, " ;
+
+//	if ( argc < 2 )
+//		return ;
+//	int result ;
+//	memset( buff, 65, MAXBUFF ) ;
+//	memcpy( buff, name, 4 ) ;
+//	strncat( buff, name, 1000 ) ;
+//	result = strncmp( argv[1], argv[2], 5 ) ;
+	strncpy( buff, name, 1 ) ;
 
 	printf( "***%s", name ) ;
 }

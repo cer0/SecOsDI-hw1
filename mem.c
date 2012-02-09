@@ -61,7 +61,6 @@ void* memset( void* s, int c, size_t n ) {
 
 	int i = 0 ;
 	for (i = 0; i < n; ++i) {
-
 		/* not sure if casting (char) is necessary */
 		*(memBuffer + i ) = (char) c ;
 	}
@@ -166,6 +165,7 @@ int strcmp( const char* s1, const char* s2) {
 		retVal = *(s1 + i ) - *(s2 + i ) ;
 		if ( '\0' == *(s1 + i) || '\0' == *(s2 +i) ) {
 			seenANull = TRUE ;
+			retVal = 0 ; /* necessary b/c retVal might not be zero */
 		}
 		i++ ;
 	}
@@ -224,8 +224,10 @@ char* strcpy( char* dest, const char* src ) {
 char* strncpy( char* dest, const char* src, size_t n ) {
 
 	int i = 0 ;
-	/* assignment handled in loop condition */
-	while( (*(dest+i) = *(src+i)) != '\0' && i < n ) {
+	/* assignment handled in loop condition
+	 * so it must occur after i < n is checked
+	 */
+	while( i < n && (*(dest+i) = *(src+i)) != '\0' ) {
 		i++ ;
 	}
 
