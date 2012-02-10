@@ -23,6 +23,10 @@
 
 typedef enum bool { FALSE = 0, TRUE } bool ;
 
+static int intToAsciiConcat( char*, int, unsigned long,
+						int, char* ) ;
+
+const int MAXSTRLEN = 100 ;
 
 /**
  * copy n bytes from src and into destination
@@ -241,9 +245,12 @@ int printf( const char* format, ... ) {
 	int argCount = 0 ;
 	int i = 0 ;
 	int buffBytesUsed = 0 ;
+	int numarg ; /* for numeric arguments */
 	char buffer[200] ;
 	char* str ;
 
+	/* initialize buffer for safety reasons */
+	memset( buffer, 0, 200 ) ;
 	/* initialize the argList */
 	va_start ( argList, format ) ;
 
@@ -266,6 +273,17 @@ int printf( const char* format, ... ) {
 				/* next arg is an int */
 				if( 'l' == format[i+2] ) {
 				} else {
+					numarg = va_arg( argList, int ) ;
+					if ( 0 == numarg ) {
+						buffer[buffBytesUsed] = '0' ;
+						buffBytesUsed++ ;
+						i+=2 ;
+
+					} else {
+						buffBytesUsed += intToAsciiConcat( buffer + buffBytesUsed, 10,
+										numarg, 10, "");
+						i+=2 ;
+					}
 				}
 				break;
 			case 'x':
@@ -290,6 +308,38 @@ int printf( const char* format, ... ) {
 	write( 1, buffer, buffBytesUsed ) ;
 
 	return 0 ;
+}
+
+/** for converting an integer to an ascii string & concatenating it */
+
+int intToAsciiConcat( char* concat, int maxWrite, unsigned long value,
+						int base, char* extraSymbols) {
+
+	if ( 0 == value ) {
+//		concat[ 0 ] = '0' ;
+//		return 1 ;
+
+		/* WILL BE FIXED LATER */
+		return 0  ;
+	}
+
+	if ( 0 >= maxWrite ) {
+		return 0 ;
+	}
+
+	int tmp = value % base ;
+	int bytesUsed = 0 ;
+
+	bytesUsed += intToAsciiConcat( concat , maxWrite - 1,
+			value / base, base, extraSymbols ) ;
+
+	if ( tmp < 10 ) {
+		concat[ bytesUsed ] = tmp + '0' ;
+	} else {
+		concat[ bytesUsed ] = extraSymbols [ tmp - 10 ] ;
+	}
+
+	return bytesUsed + 1;
 }
 
 /* should return a size_t type */
