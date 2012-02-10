@@ -274,11 +274,15 @@ int printf( const char* format, ... ) {
 				if( 'l' == format[i+2] ) {
 				} else {
 					numarg = va_arg( argList, int ) ;
+					if ( 0 > numarg ) {
+						buffer[buffBytesUsed] = '-' ;
+						buffBytesUsed++ ;
+						numarg*= -1 ;
+					}
 					if ( 0 == numarg ) {
 						buffer[buffBytesUsed] = '0' ;
 						buffBytesUsed++ ;
 						i+=2 ;
-
 					} else {
 						buffBytesUsed += intToAsciiConcat( buffer + buffBytesUsed, 10,
 										numarg, 10, "");
@@ -287,6 +291,27 @@ int printf( const char* format, ... ) {
 				}
 				break;
 			case 'x':
+				if( 'l' == format[i+2] ) {
+				} else {
+					numarg = va_arg( argList, int ) ;
+					if ( 0 > numarg ) {
+						buffer[buffBytesUsed] = '-' ;
+						buffBytesUsed++ ;
+						numarg*=-1 ;
+					}
+					strcat( buffer, "0x" ) ;
+					buffBytesUsed+=2 ;
+					if ( 0 == numarg ) {
+						buffer[buffBytesUsed] = '0' ;
+						buffBytesUsed++ ;
+						i+=2 ;
+
+					} else {
+						buffBytesUsed += intToAsciiConcat( buffer + buffBytesUsed, 10,
+										numarg, 16, "ABCDEF");
+						i+=2 ;
+					}
+				}
 				break;
 			case 'u':
 				break;
