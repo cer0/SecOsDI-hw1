@@ -23,10 +23,11 @@
 
 typedef enum bool { FALSE = 0, TRUE } bool ;
 
-static int intToAsciiConcat( char*, int, unsigned long,
-						int, char* ) ;
+static int appendULong( char*, int, unsigned long,
+		int, char* ) ;
 
 const int MAXSTRLEN = 100 ;
+const int MAXWRITE = 10 ;
 
 /**
  * copy n bytes from src and into destination
@@ -245,9 +246,12 @@ int printf( const char* format, ... ) {
 	int argCount = 0 ;
 	int i = 0 ;
 	int buffBytesUsed = 0 ;
-	int numarg ; /* for numeric arguments */
-	char buffer[200] ;
+	/* argument variables */
+	long signedArg ;
+	unsigned long notSignedArg ;
 	char* str ;
+	/* stores string to be printed */
+	char buffer[200] ;
 
 	/* initialize buffer for safety reasons */
 	memset( buffer, 0, 200 ) ;
@@ -270,51 +274,47 @@ int printf( const char* format, ... ) {
 				i+=2 ;
 				break;
 			case 'd':
-				/* next arg is an int */
-				if( 'l' == format[i+2] ) {
-				} else {
-					numarg = va_arg( argList, int ) ;
-					if ( 0 > numarg ) {
-						buffer[buffBytesUsed] = '-' ;
-						buffBytesUsed++ ;
-						numarg*= -1 ;
-					}
-					if ( 0 == numarg ) {
-						buffer[buffBytesUsed] = '0' ;
-						buffBytesUsed++ ;
-						i+=2 ;
-					} else {
-						buffBytesUsed += intToAsciiConcat( buffer + buffBytesUsed, 10,
-										numarg, 10, "");
-						i+=2 ;
-					}
+				if ( 'l' == format[i+2] ) {
+					signedArg = va_arg( argList, long ) ;
+					i+=2 ;
 				}
-				break;
+				else {
+					signedArg = va_arg( argList, int ) ;
+					i+=2 ;
+				}
+				buffBytesUsed +=
+						appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 10 , "") ;
+				break ;
+			case 'l' :
+				signedArg = va_arg( argList, long ) ;
+				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 10 , "") ;
+				break ;
 			case 'x':
-				if( 'l' == format[i+2] ) {
-				} else {
-					numarg = va_arg( argList, int ) ;
-					if ( 0 > numarg ) {
-						buffer[buffBytesUsed] = '-' ;
-						buffBytesUsed++ ;
-						numarg*=-1 ;
-					}
-					strcat( buffer, "0x" ) ;
-					buffBytesUsed+=2 ;
-					if ( 0 == numarg ) {
-						buffer[buffBytesUsed] = '0' ;
-						buffBytesUsed++ ;
-						i+=2 ;
-
-					} else {
-						buffBytesUsed += intToAsciiConcat( buffer + buffBytesUsed, 10,
-										numarg, 16, "ABCDEF");
-						i+=2 ;
-					}
+				/* what happens when a long is sent, but an int is read ? */
+				if ( 'l' == format[i+2] ) {
+					signedArg = va_arg( argList, long ) ;
+					i+=3 ;
 				}
+				else {
+					signedArg = va_arg( argList, int ) ;
+					i+=2 ;
+				}
+				strcat( buffer, "0x" ) ;
+				buffBytesUsed+=2 ;
+				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 16 , "ABCDEF") ;
 				break;
 			case 'u':
-				break;
+				if ( 'l' == format[i+2] ) {
+					notSignedArg = va_arg( argList, unsigned long ) ;
+					i+= 3 ;
+				}
+				else {
+					notSignedArg = va_arg( argList, unsigned ) ;
+					i+=2 ;
+				}
+
+				buffBytesUsed += appendULong( buffer + buffBytesUsed, MAXWRITE, notSignedArg, 10, "" ) ;
+				break ;
 			case '%' :
 				strcat( buffer, "%" ) ;
 				i += 2 ;
@@ -330,21 +330,37 @@ int printf( const char* format, ... ) {
 		}
 	}
 
+	/* ensure a complete write occurs */
 	write( 1, buffer, buffBytesUsed ) ;
 
-	return 0 ;
+	return argCount ;
+}
+
+int appendInt( char* concat, int maxWrite, long value,
+		int base, char* extraSymbols ) {
+
+	if ( 0 == value ) {
+		concat[0] = '0' ;
+		return 1 ;
+	}
+	if ( 0 > value ) {
+		concat[0] = '-' ;
+		value*=-1 ;
+		return (1 + appendULong( concat +1, maxWrite - 1,
+				value, base, extraSymbols)) ;
+	}
+	else {
+		return appendULong( concat, maxWrite,
+				value, base, extraSymbols );
+	}
+
 }
 
 /** for converting an integer to an ascii string & concatenating it */
-
-int intToAsciiConcat( char* concat, int maxWrite, unsigned long value,
-						int base, char* extraSymbols) {
+int appendULong( char* concat, int maxWrite, unsigned long value,
+		int base, char* extraSymbols) {
 
 	if ( 0 == value ) {
-//		concat[ 0 ] = '0' ;
-//		return 1 ;
-
-		/* WILL BE FIXED LATER */
 		return 0  ;
 	}
 
@@ -355,7 +371,7 @@ int intToAsciiConcat( char* concat, int maxWrite, unsigned long value,
 	int tmp = value % base ;
 	int bytesUsed = 0 ;
 
-	bytesUsed += intToAsciiConcat( concat , maxWrite - 1,
+	bytesUsed += appendULong( concat , maxWrite - 1,
 			value / base, base, extraSymbols ) ;
 
 	if ( tmp < 10 ) {

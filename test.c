@@ -35,5 +35,5 @@ void main(int argc, char **argv) {
 //	result = strncmp( argv[1], argv[2], 5 ) ;
 	strncpy( buff, name, 1 ) ;
 
-	printf( "***%s %x", name, -192 ) ;
+	printf( "***%s %x", name, 45 ) ;
 }
