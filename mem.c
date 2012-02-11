@@ -38,6 +38,7 @@ const int MAXWRITE = 10 ;
  */
 void* memcpy( void* dest, const void* src, size_t n ) {
 
+	ASSERT( (dest != NULL && src != NULL)) ;
 	char* copyTo = (char*) dest ;
 	char* copyFrom = (char*) src ;
 
@@ -52,8 +53,7 @@ void* memcpy( void* dest, const void* src, size_t n ) {
 
 
 /**
- * set n bytes of memory area starting at s to
- * the value c
+ * set a memory blocks bytes to a certain value
  * @param s the start of memory buffer
  * @param n the number of bytes to change
  * @param c the value written to each byte
@@ -61,6 +61,7 @@ void* memcpy( void* dest, const void* src, size_t n ) {
  */
 void* memset( void* s, int c, size_t n ) {
 
+	ASSERT( s != NULL ) ;
 	/* cast to use the memory buffer s */
 	char* memBuffer = (char*) s ;
 
@@ -73,11 +74,8 @@ void* memset( void* s, int c, size_t n ) {
 	return s ;
 }
 
-
 /**
- * returns a number less than 0, equal to 0, or greater than 0,
- * depending on whether s1 is less than, equal to, or greater
- * than s2. Compares their first n bytes
+ * compare two memory buffers
  * @param s1 the first buffer to compare
  * @param s2 the second buffer to compare
  * @param n the number of bytes to compare
@@ -85,6 +83,7 @@ void* memset( void* s, int c, size_t n ) {
  */
 int memcmp( const void* s1, const void* s2, size_t n ) {
 
+	ASSERT( s1 != NULL && s2 != NULL ) ;
 	char* buffer1 = (char*) s1 ;
 	char* buffer2 = (char*) s2 ;
 
@@ -106,6 +105,7 @@ int memcmp( const void* s1, const void* s2, size_t n ) {
  */
 char* strcat( char* dest, const char* src ) {
 
+	ASSERT( dest != NULL && src != NULL ) ;
 	int catLocation = 0 ;
 	int i = 0 ;
 
@@ -126,7 +126,7 @@ char* strcat( char* dest, const char* src ) {
 }
 
 /**
- * concatenate at most n chars to dest
+ * concatenate at most n chars to a string
  * @param dest the string to concatenate to
  * @param src the string concatenated to dest
  * @param n the max number of chars to concatenate
@@ -134,6 +134,7 @@ char* strcat( char* dest, const char* src ) {
  */
 char* strncat( char* dest, const char* src, size_t n ) {
 
+	ASSERT( dest != NULL && src != NULL ) ;
 	int catLocation = 0 ;
 	int i = 0 ;
 
@@ -161,6 +162,7 @@ char* strncat( char* dest, const char* src, size_t n ) {
  */
 int strcmp( const char* s1, const char* s2) {
 
+	ASSERT( s1 != NULL && s2 != NULL ) ;
 	int retVal = 0 ;		/* the return value of memcmp */
 	int i = 0 ;
 	bool seenANull =  FALSE ;
@@ -187,6 +189,7 @@ int strcmp( const char* s1, const char* s2) {
  */
 int strncmp( const char* s1, const char* s2, size_t n ) {
 
+	ASSERT( s1 != NULL && s2 != NULL ) ;
 	int retVal = 0 ;		/* the return value of memcmp */
 	int i = 0 ;
 	bool seenANull =  FALSE ;
@@ -210,6 +213,7 @@ int strncmp( const char* s1, const char* s2, size_t n ) {
  */
 char* strcpy( char* dest, const char* src ) {
 
+	ASSERT( dest != NULL && src != NULL ) ;
 	int i = 0 ;
 	/* assignment handled in loop condition */
 	while( (*(dest+i) = *(src+i)) != '\0' ) {
@@ -228,6 +232,7 @@ char* strcpy( char* dest, const char* src ) {
  */
 char* strncpy( char* dest, const char* src, size_t n ) {
 
+	ASSERT( dest != NULL && src != NULL ) ;
 	int i = 0 ;
 	/* assignment handled in loop condition
 	 * so it must occur after i < n is checked
@@ -242,6 +247,7 @@ char* strncpy( char* dest, const char* src, size_t n ) {
 /* printing to stdout */
 int printf( const char* format, ... ) {
 
+	ASSERT( format != NULL ) ;
 	va_list argList ;
 	int argCount = 0 ;
 	int i = 0 ;
@@ -331,7 +337,7 @@ int printf( const char* format, ... ) {
 	}
 
 	/* ensure a complete write occurs */
-	write( 1, buffer, buffBytesUsed ) ;
+	console_write( buffer, buffBytesUsed ) ;
 
 	return argCount ;
 }
@@ -339,10 +345,6 @@ int printf( const char* format, ... ) {
 int appendInt( char* concat, int maxWrite, long value,
 		int base, char* extraSymbols ) {
 
-	if ( 0 == value ) {
-		concat[0] = '0' ;
-		return 1 ;
-	}
 	if ( 0 > value ) {
 		concat[0] = '-' ;
 		value*=-1 ;
@@ -360,24 +362,27 @@ int appendInt( char* concat, int maxWrite, long value,
 int appendULong( char* concat, int maxWrite, unsigned long value,
 		int base, char* extraSymbols) {
 
-	if ( 0 == value ) {
-		return 0  ;
-	}
-
 	if ( 0 >= maxWrite ) {
 		return 0 ;
 	}
+	if ( 0 == value ) { 		/* only executed if initial value is 0 */
+		concat[0] = '0' ;
+		return 1 ;
+	}
 
-	int tmp = value % base ;
+	int remainder = value % base ;
+	int quotient = value / base ;
 	int bytesUsed = 0 ;
 
-	bytesUsed += appendULong( concat , maxWrite - 1,
-			value / base, base, extraSymbols ) ;
+	if ( quotient != 0 ) {
+		bytesUsed += appendULong( concat , maxWrite - 1,
+						quotient, base, extraSymbols ) ;
+	}
 
-	if ( tmp < 10 ) {
-		concat[ bytesUsed ] = tmp + '0' ;
+	if ( remainder < 10 ) {
+		concat[ bytesUsed ] = remainder + '0' ;
 	} else {
-		concat[ bytesUsed ] = extraSymbols [ tmp - 10 ] ;
+		concat[ bytesUsed ] = extraSymbols [ remainder - 10 ] ;
 	}
 
 	return bytesUsed + 1;

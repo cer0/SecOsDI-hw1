@@ -37,3 +37,6 @@ void main(int argc, char **argv) {
 
 	printf( "***%s %x", name, 45 ) ;
 }
+/* ADD ASSERT() macro to code !!!! don't be a fool !!!! */
+
+/* write the code for consoleout.h !!!!!!!!!!*/

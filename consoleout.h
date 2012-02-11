@@ -23,5 +23,14 @@
 
 typedef unsigned long long size_t ;
 
+/**
+ * write to standard output
+ * @param buffer a memory area to be written
+ * @param n number of bytes to write
+ */
+void console_write( void* buffer, size_t n ) {
+
+	write( 1, buffer, n ) ;
+}
 #endif /* CONSOLEOUT_H_ */
 
