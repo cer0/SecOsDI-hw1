@@ -20,27 +20,9 @@
  * =====================================================================================
  */
 
-#include "consoleout.h"
 #include <stdarg.h>
-
+typedef unsigned long long size_t ;
 #define NULL 0
-/* the signal TERM for process termination */
-#define TERM 15
-/* assert() implementation
- *	most of this code is from
- *	"A Book On C" 4th Ed.
- *	By Al Kelley & Ira Pohl
- *	pg 389
- * */
-#define ASSERT(expr)				\
-	if ( !(expr) ) {					\
-		printf( "\n%s%s\n%s%s\n%s%d\n\n", \
-		"Assert failed: ", #expr, 	\
-		" in file ", __FILE__, 		\
-		" at line ", __LINE__) ;	\
-		kill( getpid(), TERM );	\
-	}
-
 /* memory manipulation functions */
 void* memcpy( void* dest, const void* src, size_t n ) ;
 void* memset( void* s, int c, size_t n ) ;

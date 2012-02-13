@@ -20,7 +20,25 @@
 #ifndef CONSOLEOUT_H_
 #define CONSOLEOUT_H_
 
-
+#define NULL 0
+/* the signal TERM for process termination */
+#define TERM 15
+/* assert() implementation
+ *	most of this code is from
+ *	"A Book On C" 4th Ed.
+ *	By Al Kelley & Ira Pohl
+ *	pg 389
+ * */
+#define ASSERT(expr)				\
+	if ( !(expr) ) {					\
+		printf( "\n%s%s\n%s%s\n%s%d\n\n", \
+		"Assert failed: ", #expr, 	\
+		" in file ", __FILE__, 		\
+		" at line ", __LINE__) ;	\
+		kill( getpid(), TERM );	\
+	}
+#define EXIT()			\
+		kill( getpid(), TERM) ;
 typedef unsigned long long size_t ;
 
 /**
@@ -30,7 +48,10 @@ typedef unsigned long long size_t ;
  */
 void console_write( void* buffer, size_t n ) {
 
-	write( 1, buffer, n ) ;
+	size_t written = 0 ;
+	while( written < n ) {
+		written += write( 1, buffer + written, n - written ) ;
+	}
 }
 #endif /* CONSOLEOUT_H_ */
 

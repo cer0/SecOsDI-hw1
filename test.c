@@ -25,7 +25,7 @@ void main(int argc, char **argv) {
 	/* constants like this are located on the stack & cannot be changed */
 	char* name = "Pikachu\n" ;
 	char buff[100] = "I choose you, " ;
-
+	/* write the code for consoleout.h !!!!!!!!!!*/
 //	if ( argc < 2 )
 //		return ;
 //	int result ;
@@ -36,7 +36,18 @@ void main(int argc, char **argv) {
 	strncpy( buff, name, 1 ) ;
 
 	printf( "***%s %x", name, 45 ) ;
+	printf( NULL ) ;
 }
-/* ADD ASSERT() macro to code !!!! don't be a fool !!!! */
 
-/* write the code for consoleout.h !!!!!!!!!!*/
+/* for some reason there was a problem with "consoleout.h" being included in
+ * mem.h. Instead only included in mem.c, and the mem.h file contains a
+ * re-declaration of size_t type. Don't know why this wasn't a problem earlier on
+ */
+
+/* add invalid input stuff to printf()
+ * create another macro, called exit to
+ * exit cleanly when an error is encountered.
+ */
+
+/* define null in only one place */
+/* figure out what buffer size is best */

@@ -26,6 +26,7 @@ typedef enum bool { FALSE = 0, TRUE } bool ;
 static int appendULong( char*, int, unsigned long,
 		int, char* ) ;
 
+
 const int MAXSTRLEN = 100 ;
 const int MAXWRITE = 10 ;
 
@@ -244,7 +245,11 @@ char* strncpy( char* dest, const char* src, size_t n ) {
 	return dest ;
 }
 
-/* printing to stdout */
+/**
+ * a re-implementation of the standard C printf() function
+ * @param format format string for printing
+ * @return the number of arguments written
+ */
 int printf( const char* format, ... ) {
 
 	ASSERT( format != NULL ) ;
@@ -253,12 +258,10 @@ int printf( const char* format, ... ) {
 	int i = 0 ;
 	int buffBytesUsed = 0 ;
 	/* argument variables */
-	long signedArg ;
-	unsigned long notSignedArg ;
 	char* str ;
 	/* stores string to be printed */
 	char buffer[200] ;
-
+	typedef unsigned long long size_t ;
 	/* initialize buffer for safety reasons */
 	memset( buffer, 0, 200 ) ;
 	/* initialize the argList */
@@ -277,58 +280,49 @@ int printf( const char* format, ... ) {
 				argCount++ ;
 				buffBytesUsed += strlen(str) ;
 				/* increment i++ to get past current arg */
-				i+=2 ;
 				break;
 			case 'd':
-				if ( 'l' == format[i+2] ) {
-					signedArg = va_arg( argList, long ) ;
-					i+=2 ;
-				}
-				else {
-					signedArg = va_arg( argList, int ) ;
-					i+=2 ;
-				}
-				buffBytesUsed +=
-						appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 10 , "") ;
-				break ;
-			case 'l' :
-				signedArg = va_arg( argList, long ) ;
-				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 10 , "") ;
+				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
+								va_arg( argList, int ), 10 , "") ;
 				break ;
 			case 'x':
-				/* what happens when a long is sent, but an int is read ? */
-				if ( 'l' == format[i+2] ) {
-					signedArg = va_arg( argList, long ) ;
-					i+=3 ;
-				}
-				else {
-					signedArg = va_arg( argList, int ) ;
-					i+=2 ;
-				}
 				strcat( buffer, "0x" ) ;
 				buffBytesUsed+=2 ;
-				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE, signedArg, 16 , "ABCDEF") ;
+				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
+						va_arg( argList, int ), 16 , "ABCDEF") ;
 				break;
 			case 'u':
-				if ( 'l' == format[i+2] ) {
-					notSignedArg = va_arg( argList, unsigned long ) ;
-					i+= 3 ;
+				buffBytesUsed += appendULong( buffer + buffBytesUsed, MAXWRITE,
+						va_arg(argList, unsigned ), 10, "" ) ;
+				break ;
+			case 'l' :
+				if ( 'd' == format[i+2] ) {
+					buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
+												va_arg(argList, long), 10 , "") ;
 				}
-				else {
-					notSignedArg = va_arg( argList, unsigned ) ;
-					i+=2 ;
-				}
+				else if ( 'x' == format[i+2] ) {
+					strcat( buffer+buffBytesUsed, "0x" ) ;
+					buffBytesUsed += 2 ;
+					buffBytesUsed +=
+							appendInt( buffer + buffBytesUsed, MAXWRITE,
+							va_arg(argList, long), 16,
+							"ABCDEF") ;
+				} else if ( 'u' == format[i+2] ) {
+					buffBytesUsed += appendULong( buffer + buffBytesUsed,
+										MAXWRITE, va_arg(argList, unsigned long), 10, "" ) ;
+				} else { 	/* an error occurred */
 
-				buffBytesUsed += appendULong( buffer + buffBytesUsed, MAXWRITE, notSignedArg, 10, "" ) ;
+				}
+				i++ ; 		/* want to skip one additional character in format string */
 				break ;
 			case '%' :
 				strcat( buffer, "%" ) ;
-				i += 2 ;
 				buffBytesUsed++ ;
 				break ;
 			default:
 				break;
 			}
+			i += 2 ; 		/* skip over next two chars in format string */
 		} else {
 			buffer[ buffBytesUsed ] = format[i] ;
 			buffBytesUsed++ ;
@@ -336,12 +330,20 @@ int printf( const char* format, ... ) {
 		}
 	}
 
-	/* ensure a complete write occurs */
+	/* change back to console write later !!!!!!!!! */
 	console_write( buffer, buffBytesUsed ) ;
-
 	return argCount ;
 }
 
+/**
+ * append the argument long int as an ascii string to a string
+ * @param concat the string where int is written to
+ * @param maxWrite the max number of values to write
+ * @param value the integer to write
+ * @param base the numeric base to write 'value' as
+ * @param extra symbols to use beyond the number 9, if base is > 10, otherwise use ""
+ * @return the number of bytes written
+ */
 int appendInt( char* concat, int maxWrite, long value,
 		int base, char* extraSymbols ) {
 
@@ -358,7 +360,15 @@ int appendInt( char* concat, int maxWrite, long value,
 
 }
 
-/** for converting an integer to an ascii string & concatenating it */
+/**
+ * append a given unsigned long, as an ascii string
+ * @param concat string to concat into
+ * @param maxWrite the max number of values to write
+ * @param value the unsigned long to write
+ * @param base the numeric base to write 'value' as
+ * @param extra symbols to use beyond the number 9, if base is > 10, otherwise use ""
+ * @return the number of bytes written
+ */
 int appendULong( char* concat, int maxWrite, unsigned long value,
 		int base, char* extraSymbols) {
 
@@ -376,7 +386,7 @@ int appendULong( char* concat, int maxWrite, unsigned long value,
 
 	if ( quotient != 0 ) {
 		bytesUsed += appendULong( concat , maxWrite - 1,
-						quotient, base, extraSymbols ) ;
+				quotient, base, extraSymbols ) ;
 	}
 
 	if ( remainder < 10 ) {
@@ -388,7 +398,10 @@ int appendULong( char* concat, int maxWrite, unsigned long value,
 	return bytesUsed + 1;
 }
 
-/* should return a size_t type */
+/**
+ * @param str the string to measure the length of
+ * @return the length of 'str'
+ */
 int strlen( char* str ) {
 	int i = 0 ;
 	while( '\0' != str[i] ) {
@@ -397,4 +410,3 @@ int strlen( char* str ) {
 
 	return (i+1) ;
 }
-

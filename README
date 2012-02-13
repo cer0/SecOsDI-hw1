@@ -1,0 +1,27 @@
+About these files & directories:
+	mem.c and mem.h :
+		re-implement standard memory and string
+		manipulation functions provided by the standard C library.
+	
+	consoleout.h :
+		provides a single function to write a block
+		of bytes to output using the system call write(). This
+		code will be replaced in future iterations.
+	
+	test.c : 
+		a simple test file to verify that the mem.h functions 
+		work as described.
+	documentation/ :
+		a directory containing html and latex based documentation
+		produced with doxygen
+	hw1_config :
+		a doxygen configuration file.
+
+Documentation :
+	> for more information please refer to the source files 
+		which are heavily documented.
+	> additionally, doxygen documentation has been provided
+		in html and latex format :)
+
+Author :
+	Armando Diaz Tolentino (adt), adiazt2@uic.edu	
