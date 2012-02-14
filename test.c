@@ -19,24 +19,51 @@
 
 #include "mem.h"
 
-const int MAXBUFF = 100 ;
 void main(int argc, char **argv) {
 
-	/* constants like this are located on the stack & cannot be changed */
-	char* name = "Pikachu\n" ;
-	char buff[100] = "I choose you, " ;
-	/* write the code for consoleout.h !!!!!!!!!!*/
-//	if ( argc < 2 )
-//		return ;
-//	int result ;
-//	memset( buff, 65, MAXBUFF ) ;
-//	memcpy( buff, name, 4 ) ;
-//	strncat( buff, name, 1000 ) ;
-//	result = strncmp( argv[1], argv[2], 5 ) ;
-	strncpy( buff, name, 1 ) ;
+//	char* cat = "cat" ;
+//	char* dogGoesWoof ="dog\0goes\0woof" ;
+//	char str[100] ;
+//	memset( str, 0, 100 ) ;
+//	strcat( str, cat ) ;
+//	printf( "%s", str) ;
+//	printf("\n") ;
+//	strcpy( str, dogGoesWoof ) ;
+//	printf( "%s", str) ;
+//	printf("\n") ;
+//	strcpy( str+1, str ) ;
+//	memcpy( str, cat, 22 ) ;
+//	printf( "%s", str) ;
 
-	printf( "***%s %x", name, 45 ) ;
-	printf( NULL ) ;
+//	char* ptr = 0 ;
+//	*ptr = 'a' ;
+
+//	char* name = "Ra's Al Ghul", *hero = "Batman" ;
+//	int someNum = 19872, otherNum = 45 ;
+//	long lNum = 998292 ;
+//
+//	/* more arguments than format specifiers */
+//	printf( "%s\n", name, hero, someNum, otherNum, lNum ) ;
+//	printf( "%d\n", someNum, hero, name, otherNum, lNum ) ;
+//	printf( "%ld\n", lNum, hero) ;
+
+//	char* hello = "Konnichiwa, minasan :)" ;
+//	printf("%s\n%s\n%s\n" ) ;
+
+//	char* iSay="Chunky Bacon ~===~ !!!!!!!" ;
+//	printf( "%s\n", 2343432) ;
+
+
+	/* test case for really large input */
+	char buff[ 190 ] ;
+	int i;
+	for (i = 0; i < 190 - 1; i++) {
+		buff[i] = 'A' + i/100 ;
+	}
+	buff[i] = '\0' ;
+	printf( "%s\n\n%s\n\n", buff, buff ) ;
+
+	return ;
 }
 
 /* for some reason there was a problem with "consoleout.h" being included in

@@ -23,5 +23,9 @@ Documentation :
 	> additionally, doxygen documentation has been provided
 		in html and latex format :)
 
+Special Considerations: 
+	printf()
+		This function can print to an arbitrarily large output size,
+		as limited by system memory. 
 Author :
 	Armando Diaz Tolentino (adt), adiazt2@uic.edu	

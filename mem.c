@@ -27,8 +27,8 @@ static int appendULong( char*, int, unsigned long,
 		int, char* ) ;
 
 
-const int MAXSTRLEN = 100 ;
-const int MAXWRITE = 10 ;
+const int BUFFERMAX = 200 ;
+char* HEX_SYMBOLS = "ABCDEF" ;
 
 /**
  * copy n bytes from src and into destination
@@ -246,7 +246,8 @@ char* strncpy( char* dest, const char* src, size_t n ) {
 }
 
 /**
- * a re-implementation of the standard C printf() function
+ * a re-implementation of the standard C printf() function.
+ * can print arbitrarily large outputs.
  * @param format format string for printing
  * @return the number of arguments written
  */
@@ -260,56 +261,68 @@ int printf( const char* format, ... ) {
 	/* argument variables */
 	char* str ;
 	/* stores string to be printed */
-	char buffer[200] ;
-	typedef unsigned long long size_t ;
+	char buffer[BUFFERMAX] ;
 	/* initialize buffer for safety reasons */
-	memset( buffer, 0, 200 ) ;
+	memset( buffer, 0, BUFFERMAX ) ;
 	/* initialize the argList */
 	va_start ( argList, format ) ;
 
 	/* handle each of the arguments in the format string */
 
 	while( '\0' != format[i] ) {
+
+		/* buffer is close to full, flush it */
+		if ( buffBytesUsed >= (BUFFERMAX * .75) ) {
+			console_write(buffer, buffBytesUsed) ;
+			memset( buffer, 0, buffBytesUsed ) ; // reset only the bytes used
+			buffBytesUsed = 0 ;
+		}
+
 		if ( '%' == format[i] ) {
 			/* format flag seen */
 			switch (format[i+1]) {
 			case 's':
-				/* next arg is a string */
+				/* next arg is a string. Buffer not used in this case
+				 * because a string arg may be large, and copying
+				 * to buffer is wasteful, better to print directly.
+				 */
 				str = va_arg( argList, char* ) ;
-				strcat( buffer, str ) ;
-				argCount++ ;
-				buffBytesUsed += strlen(str) ;
-				/* increment i++ to get past current arg */
+				console_write( buffer, buffBytesUsed) ;
+				console_write( str, strlen(str) ) ;
+				memset( buffer, 0, buffBytesUsed ) ;
+				buffBytesUsed =  0 ;
 				break;
 			case 'd':
-				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
+				buffBytesUsed += appendInt( buffer + buffBytesUsed,
+								BUFFERMAX - buffBytesUsed,
 								va_arg( argList, int ), 10 , "") ;
 				break ;
 			case 'x':
 				strcat( buffer, "0x" ) ;
 				buffBytesUsed+=2 ;
-				buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
-						va_arg( argList, int ), 16 , "ABCDEF") ;
+				buffBytesUsed += appendInt( buffer + buffBytesUsed,
+								 BUFFERMAX - buffBytesUsed,
+						va_arg( argList, int ), 16 , HEX_SYMBOLS) ;
 				break;
 			case 'u':
-				buffBytesUsed += appendULong( buffer + buffBytesUsed, MAXWRITE,
+				buffBytesUsed += appendULong( buffer + buffBytesUsed, BUFFERMAX - buffBytesUsed,
 						va_arg(argList, unsigned ), 10, "" ) ;
 				break ;
 			case 'l' :
 				if ( 'd' == format[i+2] ) {
-					buffBytesUsed += appendInt( buffer + buffBytesUsed, MAXWRITE,
+					buffBytesUsed += appendInt( buffer + buffBytesUsed, BUFFERMAX - buffBytesUsed,
 												va_arg(argList, long), 10 , "") ;
 				}
 				else if ( 'x' == format[i+2] ) {
 					strcat( buffer+buffBytesUsed, "0x" ) ;
 					buffBytesUsed += 2 ;
 					buffBytesUsed +=
-							appendInt( buffer + buffBytesUsed, MAXWRITE,
+							appendInt( buffer + buffBytesUsed, BUFFERMAX - buffBytesUsed,
 							va_arg(argList, long), 16,
-							"ABCDEF") ;
+							HEX_SYMBOLS) ;
 				} else if ( 'u' == format[i+2] ) {
 					buffBytesUsed += appendULong( buffer + buffBytesUsed,
-										MAXWRITE, va_arg(argList, unsigned long), 10, "" ) ;
+							BUFFERMAX - buffBytesUsed, va_arg(argList, unsigned long), 10, "" ) ;
 				} else { 	/* an error occurred */
 
 				}
@@ -323,6 +336,7 @@ int printf( const char* format, ... ) {
 				break;
 			}
 			i += 2 ; 		/* skip over next two chars in format string */
+			argCount++ ;
 		} else {
 			buffer[ buffBytesUsed ] = format[i] ;
 			buffBytesUsed++ ;
