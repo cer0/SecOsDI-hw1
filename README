@@ -7,7 +7,7 @@ About these files & directories:
 		provides a single function to write a block
 		of bytes to output using the system call write(). This
 		code will be replaced in future iterations.
-	
+ 
 	test.c : 
 		a simple test file to verify that the mem.h functions 
 		work as described.
@@ -27,5 +27,13 @@ Special Considerations:
 	printf()
 		This function can print to an arbitrarily large output size,
 		as limited by system memory. 
+	
+	ASSERT macro :
+		This code is largely based on code I read in the 
+		following book :  "A Book On C" 4th Ed.
+	 	By Al Kelley & Ira Pohl	pg 389. Except for the last
+	 	line that calls the kill() system call, this
+	 	macro has been copied almost verbatim. All credit 
+	 	is due to the authors of this text.
 Author :
 	Armando Diaz Tolentino (adt), adiazt2@uic.edu	

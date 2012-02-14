@@ -65,16 +65,3 @@ void main(int argc, char **argv) {
 
 	return ;
 }
-
-/* for some reason there was a problem with "consoleout.h" being included in
- * mem.h. Instead only included in mem.c, and the mem.h file contains a
- * re-declaration of size_t type. Don't know why this wasn't a problem earlier on
- */
-
-/* add invalid input stuff to printf()
- * create another macro, called exit to
- * exit cleanly when an error is encountered.
- */
-
-/* define null in only one place */
-/* figure out what buffer size is best */
